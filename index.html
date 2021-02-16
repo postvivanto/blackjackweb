@@ -1,32 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8" />
+    <title>Blackjack</title>
+  </head>
 
-<head>
-  <link rel="stylesheet" href="style.css">
-  <meta charset="UTF-8">
-  <title>Blackjack</title>
-</head>
-
-<body>
-  <div class="table">
-    <!-- Dealer -->
-    <div id="dealer-side">
-      <h3>Dealer</h3>
-      <div id="dealercards" class="cards-div">
-        Cards will be placed here.
+  <body>
+    <div class="table">
+      <!-- Dealer -->
+      <div id="dealer-side">
+        <h3>Dealer</h3>
+        <div id="dealerscore" class="score-div">Score will be placed here.</div>
+        <div id="dealercards" class="cards-div">Cards will be placed here.</div>
+      </div>
+      <!-- Player -->
+      <div id="player-side">
+        <h3>You</h3>
+        <div id="playerscore" class="score-div">Score will be placed here.</div>
+        <div id="playercards" class="cards-div">Cards will be placed here.</div>
+        <button type="button" id="hit-button" disabled="">Hit</button>
+        <button type="button" id="stand-button" disabled="">Stand</button>
+        <button type="button" id="replay-button" disabled="">Replay</button>
       </div>
     </div>
-    <!-- Player -->
-    <div id="player-side">
-      <h3>You</h3>
-      <div id="playercards" class="cards-div">
-        Cards will be placed here.
-      </div>
-      <button type="button" id='hit-button'>Hit</button>
-      <button type="button" id='stand-button'>Stand</button>
-    </div>
-  </div>
-  <script src="main.js"></script>
-</body>
-
+    <script src="main.js"></script>
+  </body>
 </html>
