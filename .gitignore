@@ -1,3 +1,4 @@
+# ignore eslint related files
 **/node_modules
 *.json
 .eslintrc.js
