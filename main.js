@@ -1,4 +1,38 @@
+const hitB = document.getElementById('hit-button')
+const standB = document.getElementById('stand-button')
+const replayB = document.getElementById('replay-button')
+const dScoreDiv = document.getElementById('dealerscore')
+const pScoreDiv = document.getElementById('playerscore')
+const dCardDiv = document.getElementById('dealercards')
+const pCardDiv = document.getElementById('playercards')
 const SYMBOLS = ['Spade', 'Diamond', 'Heart', 'Clover']
+
+class Person {
+  constructor (scorediv, carddiv) {
+    this._hand = []
+    this.score = 0
+    this._scorediv = scorediv
+    this._carddiv = carddiv
+  }
+
+  getCard (deckArr) {
+    // if (deckArr.length === 0) { shuffle(deckArr) }
+    this._hand.push(deckArr.pop())
+  }
+
+  countScore () {
+    const numArr = Array.from(this._hand, x => x[0])
+    let num
+
+    numArr.sort((a, b) => { return b - a })
+    for (let i = 0; i < numArr.length; i++) {
+      num = numArr[i]
+      num = num > 10 ? 10 : (num === 1 ? (this.score + 11 <= 21 ? 11 : 1) : num)
+      this.score += num
+    }
+    // Update hand div
+  }
+}
 
 function packCard (deckArr) {
   // A = 1, J = 11, Q = 12, K = 13
@@ -22,32 +56,11 @@ function shuffle (deckArr) {
   }
 }
 
-function cntScore (cardArr) {
-  const carr = [...cardArr]
-  let score = 0
-
-  carr.sort((a, b) => { return b[0] - a[0] })
-  for (let i = 0; i < carr.length; i++) {
-    let num = carr[i][0]
-
-    num = num > 10 ? 10 : (num === 1 ? (score + 11 <= 21 ? 11 : 1) : num)
-    score += num
-  }
-
-  return score
-}
-
-function hit (deckArr) {
-  if (deckArr.length === 0) {
-    deckArr = packCard([])
-  }
-
-  return deckArr.pop()
-}
-
 function printDeck (cardStrArr) {
-  function cardStr (card) {
-    let num = card[0]
+  const retCardStrArr = []
+
+  for (let i = 0; i < cardStrArr.length; i++) {
+    let num = cardStrArr[i][0]
 
     switch (num) {
       case 1:
@@ -63,14 +76,7 @@ function printDeck (cardStrArr) {
         num = 'King'
         break
     }
-
-    return `${num} of ${SYMBOLS[card[1]]}`
-  }
-
-  const retCardStrArr = []
-
-  for (let i = 0; i < cardStrArr.length; i++) {
-    retCardStrArr.push(cardStr(cardStrArr[i]))
+    retCardStrArr.push(`${num} of ${SYMBOLS[cardStrArr[i][1]]}`)
   }
 
   return retCardStrArr
@@ -79,47 +85,41 @@ function printDeck (cardStrArr) {
 function delay (ms) { return new Promise(resolve => setTimeout(resolve, ms)) }
 
 async function playGame () {
-  const deck = []
+  let deck = []
   const dCards = []
   const pCards = []
-  const hitB = document.getElementById('hit-button')
-  const standB = document.getElementById('stand-button')
-  const replayB = document.getElementById('replay-button')
-  const dScoreDiv = document.getElementById('dealerscore')
-  const pScoreDiv = document.getElementById('playerscore')
-  const dCardDiv = document.getElementById('dealercards')
-  const pCardDiv = document.getElementById('playercards')
-  const DELAY_TIME = 1000
+  const DELAY_TIME = 500
   let pScore, dScore
 
   function cntScoreAll () {
-    const parr = [...pCards[0]]
-    const darr = [...dCards[0]]
+    const parr = Array.from(pCards, x => x[0])
+    const darr = Array.from(dCards, x => x[0])
+    let num
 
     pScore = 0
     dScore = 0
-
     parr.sort((a, b) => { return b - a })
     darr.sort((a, b) => { return b - a })
     for (let i = 0; i < parr.length; i++) {
-      let num = parr[i]
-
+      num = parr[i]
       num = num > 10 ? 10 : (num === 1 ? (pScore + 11 <= 21 ? 11 : 1) : num)
       pScore += num
     }
     for (let i = 0; i < darr.length; i++) {
-      let num = darr[i]
-
+      num = darr[i]
       num = num > 10 ? 10 : (num === 1 ? (dScore + 11 <= 21 ? 11 : 1) : num)
       dScore += num
     }
   }
 
   async function takeCard (person) {
-    person.push(hit(deck))
-    // cntScoreAll()
-    dScoreDiv.innerHTML = cntScore(dCards)
-    pScoreDiv.innerHTML = cntScore(pCards)
+    if (deck.length === 0) {
+      deck = packCard([])
+    }
+    person.push(deck.pop())
+    cntScoreAll()
+    dScoreDiv.innerHTML = dScore
+    pScoreDiv.innerHTML = pScore
     dCardDiv.innerHTML = printDeck(dCards)
     pCardDiv.innerHTML = printDeck(pCards)
     await delay(DELAY_TIME)
@@ -128,11 +128,14 @@ async function playGame () {
   async function stand () {
     hitB.setAttribute('disabled', '')
     standB.setAttribute('disabled', '')
-    // dealer 17 rule
-    while (cntScore(dCards) < 17) { await takeCard(dCards) }
-    const playerwin = pScore <= 21 && (pScore > dScore || dScore > 21)
-    const winlose = playerwin ? 'Win' : 'Lose'
+    let winlose
 
+    if (pScore > 21) { winlose = 'Lose' } else {
+      // dealer 17 rule
+      // eslint-disable-next-line no-unmodified-loop-condition
+      while (dScore < 17) { await takeCard(dCards) }
+      winlose = pScore <= 21 && (pScore > dScore || dScore > 21) ? 'Win' : 'Lose'
+    }
     await delay(DELAY_TIME)
     alert(`You ${winlose}!`)
     replayB.removeAttribute('disabled')
@@ -161,8 +164,8 @@ async function playGame () {
   // bet
   // first two cards
   await takeCard(dCards)
-  await takeCard(pCards)
   await takeCard(dCards)
+  await takeCard(pCards)
   await takeCard(pCards)
   // dealer open a card
   // player phase
